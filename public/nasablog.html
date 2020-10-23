@@ -64,7 +64,7 @@
             data:{
                 isVisible: false,
                 keyword: 'Mars Mission',
-                media_type: 'video',
+                media_type: 'images',
                 title: '',
                 dataset: []
             },
@@ -78,6 +78,17 @@
                     console.log('is visible?');
                     this.isVisible = !this.isVisible;
                 },
+                // checkUrl: function(url, media_type){
+                //     let ext = url.substring(url.lasIndexOf('.')+1, url.length);
+                //     console.log(ext);
+                //     switch(media_type){
+                //         case 'video':
+                            
+                //             break;
+                //         case 'image':
+                //             break
+                //     }
+                // },
 
             fetchApiData: function(){
                 
@@ -116,7 +127,7 @@
                                     console.log('VideoUrl:');
                                     videoUrl = res.data[0];
                                     console.log(videoUrl);
-                                    
+                                    // vm.checkUrl(videoUrl, vm.media_type);
                                 })
                                 newItem = {
                                     title: tempTitle,
