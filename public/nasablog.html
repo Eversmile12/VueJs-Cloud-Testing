@@ -38,7 +38,8 @@
                             <p>{{content.description}}</p>
                             <img class="img-center" :src='content.imgUrl'>
                             <button></button>
-                            <But v-if="content.videoUrl != null">{{content.videoUrl}}</p>
+                            <!-- <p> v-if="content.videoUrl != null">{{content.videoUrl}}</p> -->
+
                                  
                         </div>
                         
@@ -63,7 +64,7 @@
             data:{
                 isVisible: false,
                 keyword: 'Mars Mission',
-                media_type: 'image',
+                media_type: 'video',
                 title: '',
                 dataset: []
             },
@@ -90,25 +91,32 @@
                 .then(function(res){
                     console.log(res.data);
                     let query = res.data.collection.items;
+
                     if(vm.dataset.length > 0){
                             vm.dataset = [];
                         }
+
                     for(item in query){
-                        console.log('loop through query')
+                        console.log('query items');
                         let tempItem = query[item].data[0];
                         let tempTitle = tempItem.title;
                         let tempDescription= tempItem.description;
                         let tempImgUrl = '';
                         let newItem= '';
+
                         switch(vm.media_type){
                             case 'video':
-                                console.log('video');
+
                                 tempImgUrl = query[item].links[0].href;
-                                tempVideoUrl = query[item].href;
-                                console.log(tempVideoUrl);
-                                axios.get(tempVideoUrl)
+                                repoVideUrl = query[item].href;
+                                let tempVideoUrl = '';
+
+                                axios.get(repoVideUrl)
                                 .then(function(res){
-                                    console.log(res.data[0]);
+                                    console.log('VideoUrl:');
+                                    videoUrl = res.data[0];
+                                    console.log(videoUrl);
+                                    
                                 })
                                 newItem = {
                                     title: tempTitle,
@@ -116,7 +124,8 @@
                                     imgUrl: tempImgUrl,
                                     videoUrl: tempVideoUrl
                                 };
-                            break;
+                                break;
+
                             case 'image':
                                 tempImgUrl = query[item].links[0].href;
                                 newItem = {
@@ -137,7 +146,7 @@
                         vm.dataset.push(newItem);
                     }
 
-                    console.log(vm.dataset);
+                    // console.log(vm.dataset);
                     
                     
                     
