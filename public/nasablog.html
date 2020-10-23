@@ -1,0 +1,153 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container-fluid" id="app">
+        <div class="row bg-dark">
+            <div class='col-sm-8 text-light bg-dark'>
+                <h1 class="text-center mt-4">Nasa blog repo</h1>
+            </div>
+            <div class='col-sm-3 mt-3'>
+                <div class='form-group'>
+                    <input name="keywords" type="text" class="form-control" v-model='keyword' placeholder="insert keywords">
+                    <select class="form-control mt-3" v-model='media_type'>
+                        <option value="image" >image</option>
+                        <option value="video">video</option>
+                        <option value="audio">audio</option>
+                    </select>
+                    <input v-if="isVisible" type="text" class="form-control mt-3" placeholder="insert title">
+                    
+                    <button @click='advancedSearch' class="btn btn-light mt-3">advanced search</button>
+                    <button @click='fetchApiData' class="btn btn-light mt-3">search</button>
+                </div>
+                
+            </div>
+        </div>
+        <ul class="list-group">
+            <li class='list-group-item' v-for='content in dataset'>
+                <div class="container">
+                    <div>
+                        <h2 class='text-center'>{{content.title}}</h2>
+                    </div>                       
+                    <div class="row">
+                        <div class="">
+                            <p>{{content.description}}</p>
+                            <img class="img-center" :src='content.imgUrl'>
+                            <button></button>
+                            <But v-if="content.videoUrl != null">{{content.videoUrl}}</p>
+                                 
+                        </div>
+                        
+                    </div>                       
+                    <div class="col-md-4">
+                       
+                    </div>
+                   
+                    
+                </div>
+                <p></p>
+                
+            </li>
+        </ul>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+        let vm = new Vue({
+            el: '#app',
+            data:{
+                isVisible: false,
+                keyword: 'Mars Mission',
+                media_type: 'image',
+                title: '',
+                dataset: []
+            },
+
+            created: function(){
+                this.fetchApiData();
+            },
+
+            methods:{
+                advancedSearch: function(){
+                    console.log('is visible?');
+                    this.isVisible = !this.isVisible;
+                },
+
+            fetchApiData: function(){
+                
+                let entryPoint = 'https://images-api.nasa.gov/search?'
+                let keywords = 'keywords=' + this.keyword;
+                let mediaType = '&media_type=' + this.media_type;
+                let title = '&q=' + this.title;
+
+                let url = entryPoint+keywords+mediaType;
+                axios.get(url)
+                .then(function(res){
+                    console.log(res.data);
+                    let query = res.data.collection.items;
+                    if(vm.dataset.length > 0){
+                            vm.dataset = [];
+                        }
+                    for(item in query){
+                        console.log('loop through query')
+                        let tempItem = query[item].data[0];
+                        let tempTitle = tempItem.title;
+                        let tempDescription= tempItem.description;
+                        let tempImgUrl = '';
+                        let newItem= '';
+                        switch(vm.media_type){
+                            case 'video':
+                                console.log('video');
+                                tempImgUrl = query[item].links[0].href;
+                                tempVideoUrl = query[item].href;
+                                console.log(tempVideoUrl);
+                                axios.get(tempVideoUrl)
+                                .then(function(res){
+                                    console.log(res.data[0]);
+                                })
+                                newItem = {
+                                    title: tempTitle,
+                                    description: tempDescription,
+                                    imgUrl: tempImgUrl,
+                                    videoUrl: tempVideoUrl
+                                };
+                            break;
+                            case 'image':
+                                tempImgUrl = query[item].links[0].href;
+                                newItem = {
+                                    title: tempTitle,
+                                    description: tempDescription,
+                                    imgUrl: tempImgUrl
+                            };
+                            break;
+                            case'audio':
+                                console.log('audio');
+                            break;
+                        }
+                        
+                        // console.log(tempTitle + ' ' + tempDescription + ' ' + tempImgUrl);
+                        //create new object with only relevant informations.
+                        
+                        //Clean dataset before adding new elements
+                        vm.dataset.push(newItem);
+                    }
+
+                    console.log(vm.dataset);
+                    
+                    
+                    
+                })
+            },
+
+           
+            
+            }
+        })
+    </script>
+  </body>
+</html>

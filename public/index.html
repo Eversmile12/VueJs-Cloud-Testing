@@ -1,17 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
+ <!DOCTYPE html>
+<html>
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+      [v-cloak]{
+        display: none;
+      }
+    </style>
+  <link rel="stylesheet" href="styleSheet" type="text/css">
   </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
+  <body>    
+    <div class="card mt-5 ml-3" id="app">
+      <h2 class="card-header">near_earth_objects</h2>
+      <div class="ml-3">
+        <p v-cloak >{{numAsteroids}} asteroids from NASA</p>
+        <p v-cloak >Nearest miss_distance object: {{getNearestMissDistance}}</p>
+      </div>
+      
+      <table class="table">
+        <thead>
+          <th>#</th>
+          <th>Name</th>
+          <th>Close Approach Date</th>
+          <th>Miss Distance</th>
+          <th>remove</th>
+        </thead>
+        <tbody>
+            <tr v-for='(a, index) in asteroids'>
+              <td>{{index + 1}}</td>
+              <td> {{a.name}}</td>
+              <td>{{getApproachData(a)}}</td>
+              <td>
+                <ul v-if="a.close_approach_data.length > 0" class="list-group">
+                  <li class="list-group-item" v-for='(value, key, index) in a.close_approach_data[0].miss_distance'>
+                    {{index}}. {{key}}: {{roundValue(value)}}
+                  </li>
+                </ul>
+              </td>
+              <td><button class="btn btn-warning" @click='remove(index)'>remove</button></td>
+              
+            </tr>
+          </tr>
+        </tbody>
+      </table>
+      
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+    <script>
+      let vm = new Vue({
+        el:"#app",
+        data:{
+          asteroids: []     
+        },
+        computed:{
+          numAsteroids: function(){
+            return this.asteroids.length;
+          },
+          getNearestMissDistance: function(){
+            let neonsObjectsWithData = this.asteroids.filter(function(neo){
+              return neo.close_approach_data.length;
+            });
+            let mappedNeosObjects = neonsObjectsWithData.map(function(neo){
+              return {name: neo.name, miles: neo.close_approach_data[0].miss_distance.miles};
+            });
+            let sortedNeosObjects = mappedNeosObjects.sort(function(a,b){
+              return a.miles - b.miles;
+            })
+            return sortedNeosObjects[0].name;
+          }
+        },
+
+        
+        created: function(){
+          this.fetchNasaData();
+        },
+        methods:{
+          fetchNasaData: function(){
+            let apiKey = '7IICMqaX15yv81N5cnnzFdD7SL0rqtUw4Jzw1pXC';
+            let url = 'https://api.nasa.gov/neo/rest/v1/neo/browse?api_key=' + apiKey;
+            axios.get(url)
+            .then(function(res){
+              console.log(res.data);
+              vm.asteroids = res.data.near_earth_objects;                
+            })
+          },
+
+          getApproachData:function(a){
+            if(a.close_approach_data.length > 0){
+              return a.close_approach_data[0].close_approach_date
+            }
+            return 'N/A'
+          },
+          
+          remove(index){
+            this.asteroids.splice(index, 1);
+          },
+
+          roundValue(value){
+            return(Number(value).toFixed(2));
+          }
+        }
+        
+        });
+
+
+   
+
+
+    </script>
   </body>
 </html>
+
